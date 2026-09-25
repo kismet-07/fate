@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using RanMobile.Character;
 
 namespace RanMobile.CameraSystem
 {
@@ -8,6 +9,7 @@ namespace RanMobile.CameraSystem
         [Header("Target")]
         [SerializeField] private Transform target;
         [SerializeField] private Vector3 targetOffset = new Vector3(0f, 1.45f, 0f);
+        [SerializeField] private bool autoFindCharacter = true;
 
         [Header("Position")]
         [SerializeField, Min(0.5f)] private float distance = 4.5f;
@@ -41,10 +43,15 @@ namespace RanMobile.CameraSystem
                 pitch = initialPitch;
 
             currentPitch = pitch;
+
+            TryResolveTarget();
         }
 
         private void LateUpdate()
         {
+            if (target == null && autoFindCharacter)
+                TryResolveTarget();
+
             if (target == null)
                 return;
 
@@ -73,6 +80,13 @@ namespace RanMobile.CameraSystem
                 positionSmoothTime);
 
             transform.rotation = rotation;
+        }
+
+        private void TryResolveTarget()
+        {
+            RanCharacterController character = FindFirstObjectByType<RanCharacterController>();
+            if (character != null)
+                target = character.transform;
         }
 
         private void UpdateLook()
