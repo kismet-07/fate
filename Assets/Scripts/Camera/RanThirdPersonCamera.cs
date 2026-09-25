@@ -25,10 +25,11 @@ namespace RanMobile.CameraSystem
 
         private float yaw;
         private float pitch;
+        private float yawVelocity;
+        private float pitchVelocity;
         private Vector3 positionVelocity;
         private float currentYaw;
         private float currentPitch;
-        private bool initialized;
 
         private void Awake()
         {
@@ -40,7 +41,6 @@ namespace RanMobile.CameraSystem
                 pitch = initialPitch;
 
             currentPitch = pitch;
-            initialized = true;
         }
 
         private void LateUpdate()
@@ -53,13 +53,13 @@ namespace RanMobile.CameraSystem
             currentYaw = Mathf.SmoothDampAngle(
                 currentYaw,
                 yaw,
-                ref positionVelocity.x,
+                ref yawVelocity,
                 rotationSmoothTime);
 
             currentPitch = Mathf.SmoothDamp(
                 currentPitch,
                 pitch,
-                ref positionVelocity.y,
+                ref pitchVelocity,
                 rotationSmoothTime);
 
             Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
@@ -77,9 +77,6 @@ namespace RanMobile.CameraSystem
 
         private void UpdateLook()
         {
-            if (!initialized)
-                return;
-
             Mouse mouse = Mouse.current;
             if (mouse == null)
                 return;
