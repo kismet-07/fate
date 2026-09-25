@@ -39,6 +39,9 @@ namespace RanMobile.Character
 
             if (GetComponent<RanCharacterController>() == null)
                 gameObject.AddComponent<RanCharacterController>();
+
+            if (GetComponent<RanCharacterProceduralAnimator>() == null)
+                gameObject.AddComponent<RanCharacterProceduralAnimator>();
         }
 
         private void ConfigureCharacterController()
