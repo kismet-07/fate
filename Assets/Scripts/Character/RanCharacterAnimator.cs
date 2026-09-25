@@ -24,13 +24,9 @@ namespace RanMobile.Character
             if (movement == null)
                 return;
 
-            float speed = 0f;
-            if (movement.TryGetComponent<CharacterController>(out var controller))
-                speed = new Vector3(controller.velocity.x, 0f, controller.velocity.z).magnitude;
-
-            animator.SetFloat(speedParameter, speed);
-            animator.SetBool(movingParameter, speed > 0.05f);
-            animator.SetBool(sprintParameter, Input.GetKey(KeyCode.LeftShift));
+            animator.SetFloat(speedParameter, movement.CurrentHorizontalSpeed);
+            animator.SetBool(movingParameter, movement.CurrentHorizontalSpeed > 0.05f);
+            animator.SetBool(sprintParameter, movement.IsRunning);
         }
     }
 }
