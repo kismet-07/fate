@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace RanMobile.Character
 {
@@ -9,9 +10,24 @@ namespace RanMobile.Character
 
         private void Update()
         {
-            Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            Move = Vector2.ClampMagnitude(Move, 1f);
-            Sprint = Input.GetKey(KeyCode.LeftShift);
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                Move = Vector2.zero;
+                Sprint = false;
+                return;
+            }
+
+            float x = 0f;
+            float y = 0f;
+
+            if (keyboard.aKey.isPressed) x -= 1f;
+            if (keyboard.dKey.isPressed) x += 1f;
+            if (keyboard.sKey.isPressed) y -= 1f;
+            if (keyboard.wKey.isPressed) y += 1f;
+
+            Move = Vector2.ClampMagnitude(new Vector2(x, y), 1f);
+            Sprint = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
         }
     }
 }
