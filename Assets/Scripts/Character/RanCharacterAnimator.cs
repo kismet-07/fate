@@ -15,13 +15,14 @@ namespace RanMobile.Character
         private void Awake()
         {
             animator = GetComponent<Animator>();
+
             if (movement == null)
                 movement = GetComponent<RanCharacterController>();
         }
 
         private void Update()
         {
-            if (movement == null)
+            if (movement == null || animator == null || animator.runtimeAnimatorController == null)
                 return;
 
             animator.SetFloat(speedParameter, movement.CurrentHorizontalSpeed);
