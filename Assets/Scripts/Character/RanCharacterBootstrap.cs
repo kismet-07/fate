@@ -8,6 +8,9 @@ namespace RanMobile.Character
         [Header("Character Controller")]
         [SerializeField] private CharacterController characterController;
 
+        [Header("Animator")]
+        [SerializeField] private Animator animator;
+
         [Header("Collider Defaults")]
         [SerializeField, Min(0.01f)] private float radius = 0.28f;
         [SerializeField, Min(0.1f)] private float height = 1.8f;
@@ -18,6 +21,7 @@ namespace RanMobile.Character
         private void Reset()
         {
             characterController = GetComponent<CharacterController>();
+            animator = GetComponent<Animator>();
         }
 
         private void Awake()
@@ -40,8 +44,14 @@ namespace RanMobile.Character
             if (GetComponent<RanCharacterController>() == null)
                 gameObject.AddComponent<RanCharacterController>();
 
-            if (GetComponent<RanCharacterProceduralAnimator>() == null)
-                gameObject.AddComponent<RanCharacterProceduralAnimator>();
+            if (animator == null)
+                animator = GetComponent<Animator>();
+
+            if (animator == null)
+                animator = gameObject.AddComponent<Animator>();
+
+            if (GetComponent<RanCharacterAnimator>() == null)
+                gameObject.AddComponent<RanCharacterAnimator>();
         }
 
         private void ConfigureCharacterController()
