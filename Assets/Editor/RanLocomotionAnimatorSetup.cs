@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -23,7 +24,7 @@ namespace RanMobile.EditorTools
             {
                 Debug.LogError(
                     "Ran locomotion setup requires three AnimationClips in " +
-                    AnimationFolder + ": Idle, Walk, and Run. " +
+                    AnimationFolder + ": Idle, Walk/Walking, and Run/Running. " +
                     $"Found Idle={Format(idle)}, Walk={Format(walk)}, Run={Format(run)}.");
                 return;
             }
@@ -106,17 +107,41 @@ namespace RanMobile.EditorTools
 
         private static AnimationClip FindClip(string keyword)
         {
-            string[] guids = AssetDatabase.FindAssets("t:AnimationClip", new[] { AnimationFolder });
+            // Mixamo animation FBX files normally contain the actual AnimationClip
+            // as an embedded sub-asset named "mixamo.com". AssetDatabase.FindAssets
+            // does not reliably index those embedded clips as standalone assets, so
+            // inspect every asset contained in each FBX/model file instead.
+            string[] assetGuids = AssetDatabase.FindAssets("", new[] { AnimationFolder });
 
-            return guids
+            return assetGuids
                 .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => path.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase))
                 .SelectMany(path => AssetDatabase.LoadAllAssetsAtPath(path)
                     .OfType<AnimationClip>()
-                    .Select(clip => new { clip, path }))
-                .Where(x => !x.clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase))
-                .Where(x => x.clip.name.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .Where(clip => !clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase))
+                    .Select(clip => new
+                    {
+                        clip,
+                        path,
+                        fileName = Path.GetFileNameWithoutExtension(path)
+                    }))
+                .Where(x => IsAnimationMatch(x.fileName, keyword) ||
+                            x.clip.name.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
                 .Select(x => x.clip)
                 .FirstOrDefault();
+        }
+
+        private static bool IsAnimationMatch(string fileName, string keyword)
+        {
+            if (string.Equals(keyword, "walk", StringComparison.OrdinalIgnoreCase))
+                return string.Equals(fileName, "walk", StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(fileName, "walking", StringComparison.OrdinalIgnoreCase);
+
+            if (string.Equals(keyword, "run", StringComparison.OrdinalIgnoreCase))
+                return string.Equals(fileName, "run", StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(fileName, "running", StringComparison.OrdinalIgnoreCase);
+
+            return string.Equals(fileName, keyword, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void EnsureLoop(AnimationClip clip)
